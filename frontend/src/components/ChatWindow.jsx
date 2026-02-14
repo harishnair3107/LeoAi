@@ -1,9 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import logo from '../assets/leo.png';
 
-export default function ChatWindow({ conversation, onSend, userName }) {
+export default function ChatWindow({ conversation, onSend, userName, isTyping }) {
   const [text, setText] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
   const bottomRef = useRef();
 
   useEffect(() => {
@@ -15,17 +14,9 @@ export default function ChatWindow({ conversation, onSend, userName }) {
     if (!text.trim()) return;
     onSend(text.trim());
     setText('');
-    setIsTyping(true);
-
-    // Simulate thinking state (this will be handled by the parent, but we can visual it here if parent updates)
-    // Actually, Chat.jsx should pass isTyping prop if we want it perfect, 
-    // but for now we can simulate or expect a slight delay in parent's message update.
   }
 
-  // Effect to turn off typing indicator when messages update
-  useEffect(() => {
-    setIsTyping(false);
-  }, [conversation?.messages]);
+
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -108,7 +99,7 @@ export default function ChatWindow({ conversation, onSend, userName }) {
 
   return (
     <div style={containerStyle}>
-      <div style={messagesContainerStyle}>
+      <div style={messagesContainerStyle} className="hide-scrollbar">
         {conversation?.messages.length === 0 ? (
           <div style={{ textAlign: 'center', marginTop: '100px', color: 'var(--text-muted)', animation: 'scaleIn 0.6s ease-out' }}>
             <div style={{
@@ -140,7 +131,14 @@ export default function ChatWindow({ conversation, onSend, userName }) {
                   <img src={logo} alt="L" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 </div>
               )}
-              <div style={{ fontSize: '1.05rem', lineHeight: '1.7', paddingTop: m.role === 'assistant' ? '2px' : '0' }}>{m.text}</div>
+              <div style={{
+                fontSize: '1.05rem',
+                lineHeight: '1.7',
+                paddingTop: m.role === 'assistant' ? '2px' : '0',
+                whiteSpace: 'pre-wrap'
+              }}>
+                {m.text}
+              </div>
             </div>
           ))
         )}
@@ -150,10 +148,20 @@ export default function ChatWindow({ conversation, onSend, userName }) {
             <div style={avatarStyle}>
               <img src={logo} alt="L" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </div>
-            <div style={{ display: 'flex', gap: '4px', alignItems: 'center', padding: '12px 0' }}>
-              <div style={typingDotStyle('0s')} />
-              <div style={typingDotStyle('0.2s')} />
-              <div style={typingDotStyle('0.4s')} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '10px 0' }}>
+              <div style={{
+                color: 'var(--gold)',
+                fontSize: '0.9rem',
+                fontWeight: '500',
+                animation: 'thinkingFade 1.5s infinite ease-in-out'
+              }}>
+                Thinking...
+              </div>
+              <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                <div style={typingDotStyle('0s')} />
+                <div style={typingDotStyle('0.2s')} />
+                <div style={typingDotStyle('0.4s')} />
+              </div>
             </div>
           </div>
         )}

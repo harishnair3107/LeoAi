@@ -12,6 +12,7 @@ export default function Chat() {
   );
   const [activeId, setActiveId] = useState(conversations[0]?.id || null);
   const [sidebarOpen, setSidebarOpen] = useState(true); // Default open on desktop
+  const [isTyping, setIsTyping] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('conversations', JSON.stringify(conversations));
@@ -40,6 +41,7 @@ export default function Chat() {
     setConversations(prev => prev.map(c =>
       c.id === activeId ? { ...c, messages: [...c.messages, userMsg] } : c
     ));
+    setIsTyping(true);
 
     try {
       const res = await axios.post('/api/chat/send', { message: text });
@@ -52,6 +54,8 @@ export default function Chat() {
       ));
     } catch (err) {
       console.error('Chat API error:', err);
+    } finally {
+      setIsTyping(false);
     }
   }
 
@@ -69,6 +73,7 @@ export default function Chat() {
     );
     setConversations(updated);
   }
+
 
   const headerStyle = {
     display: 'flex',
@@ -147,7 +152,7 @@ export default function Chat() {
       </button>
 
       <aside className={`chat-sidebar ${sidebarOpen ? 'open' : 'collapsed'}`}>
-        <div>
+        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }} className="hide-scrollbar">
           <div style={headerStyle}>
             <h2 style={headingStyle}>Conversations</h2>
             <button
@@ -186,6 +191,7 @@ export default function Chat() {
             conversation={conversations.find((c) => c.id === activeId)}
             onSend={sendMessage}
             userName={user?.name}
+            isTyping={isTyping}
           />
         ) : (
           <div style={placeholderStyle}>
